@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#23324a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>¿El o la?</title>
+<style>
+:root{--tinta:#23324a;--fondo:#e6f6ee;--el:#2f6fed;--la:#ff8a1f;--bien:#1fa463;--mal:#d9483b;--blanco:#fff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--fondo);color:var(--tinta);font-family:"Nunito","Trebuchet MS","Comic Sans MS",system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+main{width:100%;max-width:520px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:12px 0}
+.barra{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:1.05rem}
+.modos{display:flex;gap:6px}
+.modos button{border:3px solid var(--tinta);background:transparent;color:var(--tinta);border-radius:999px;padding:6px 14px;font:inherit;font-weight:800}
+.modos button.act{background:var(--tinta);color:var(--blanco)}
+.tarjeta{background:var(--blanco);border-radius:28px;border:3px solid var(--tinta);box-shadow:0 8px 0 var(--tinta);padding:22px 16px;text-align:center}
+#emoji{font-size:min(30vw,9rem);line-height:1.1}
+.frase{display:flex;justify-content:center;align-items:center;gap:12px;font-size:clamp(2.2rem,10vw,3.4rem);font-weight:900;margin-top:6px}
+#hueco{min-width:3.2ch;padding:0 10px;border-bottom:6px dashed var(--tinta);color:transparent}
+#hueco.el{color:var(--el);border-bottom-style:solid;border-color:var(--el)}
+#hueco.la{color:var(--la);border-bottom-style:solid;border-color:var(--la)}
+#msg{min-height:2rem;text-align:center;font-weight:800;font-size:1.2rem}
+#msg.ok{color:var(--bien)}#msg.mal{color:var(--mal)}
+#opciones{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.op{border:3px solid var(--tinta);border-radius:22px;padding:20px 8px;font:inherit;font-size:2.2rem;font-weight:900;color:var(--blanco);box-shadow:0 6px 0 var(--tinta);cursor:pointer}
+.op:active{transform:translateY(4px);box-shadow:0 2px 0 var(--tinta)}
+.o0{background:var(--el)}.o1{background:var(--la)}
+.op.ok{outline:6px solid var(--bien)}.op.mal{opacity:.45}
+.fin{text-align:center}
+.fin .estrellas{font-size:3.4rem}
+.fin p{font-size:1.3rem;font-weight:800}
+.grande{border:3px solid var(--tinta);background:var(--bien);color:var(--blanco);border-radius:22px;padding:16px 28px;font:inherit;font-size:1.5rem;font-weight:900;box-shadow:0 6px 0 var(--tinta)}
+#tema{align-self:center;border:3px solid var(--tinta);border-radius:999px;background:var(--blanco);color:var(--tinta);font:inherit;font-weight:800;font-size:1.05rem;padding:8px 16px;max-width:100%}
+button:focus-visible{outline:4px solid var(--tinta);outline-offset:3px}
+</style>
+</head>
+<body>
+<main>
+ <div class="barra">
+  <span id="prog"></span>
+  <div class="modos" role="group" aria-label="Tipo de artículo">
+   <button id="m-def" class="act">el / la</button>
+   <button id="m-indef">un / una</button>
+  </div>
+  <span id="puntos">⭐ 0</span>
+ </div>
+ <select id="tema" aria-label="Tema"><option value="">🌍 Todos los temas</option></select>
+ <section id="juego">
+  <div class="tarjeta">
+   <div id="emoji" aria-hidden="true"></div>
+   <div class="frase"><span id="hueco">el</span><span id="palabra"></span></div>
+  </div>
+  <p id="msg" aria-live="polite"></p>
+  <div id="opciones"></div>
+ </section>
+ <section id="fin" class="fin" hidden>
+  <div class="tarjeta">
+   <div class="estrellas" id="estrellas"></div>
+   <p id="resumen"></p>
+   <p id="record"></p>
+  </div>
+  <p><button class="grande" id="otra">Jugar otra vez</button></p>
+ </section>
+</main>
+<script>
+const TEMAS={
+"🐾 Animales":"🐶 perro m,🐱 gato m,🐭 ratón m,🐰 conejo m,🐻 oso m,🐼 panda m,🐯 tigre m,🦁 león m,🐮 vaca f,🐷 cerdo m,🐸 rana f,🐵 mono m,🐔 gallina f,🐧 pingüino m,🐦 pájaro m,🦆 pato m,🦉 búho m,🐴 caballo m,🦄 unicornio m,🐝 abeja f,🦋 mariposa f,🐌 caracol m,🐢 tortuga f,🐍 serpiente f,🐙 pulpo m,🐟 pez m,🐬 delfín m,🐘 elefante m,🦒 jirafa f,🐑 oveja f,🐊 cocodrilo m,🦀 cangrejo m,🕷️ araña f,🐜 hormiga f",
+"🏠 Casa":"🏠 casa f,🪑 silla f,🛏️ cama f,🚪 puerta f,🪟 ventana f,🛋️ sofá m,🚿 ducha f,🛁 bañera f,🔑 llave f,💡 bombilla f,🪞 espejo m,⏰ reloj m,🖼️ cuadro m,🧹 escoba f,🧺 cesta f,🕯️ vela f,📺 televisión f,📱 teléfono m,🔌 enchufe m,🪴 maceta f,🍽️ plato m,🥄 cuchara f,🍴 tenedor m,🔪 cuchillo m,☕ taza f,🍼 biberón m,🧼 jabón m,🪥 cepillo m,💻 ordenador m",
+"🍕 Comida":"🍞 pan m,🧀 queso m,🥚 huevo m,🥛 leche f,🍕 pizza f,🍔 hamburguesa f,🌭 salchicha f,🍗 pollo m,🥩 filete m,🍚 arroz m,🥣 sopa f,🍪 galleta f,🍰 tarta f,🍩 rosquilla f,🍫 chocolate m,🍬 caramelo m,🍦 helado m,🥐 cruasán m,🍯 miel f,🥞 tortita f,🧈 mantequilla f,🥗 ensalada f,🍳 tortilla f,🌮 taco m",
+"🍎 Frutas":"🍎 manzana f,🍌 plátano m,🍊 naranja f,🍋 limón m,🍇 uva f,🍓 fresa f,🍉 sandía f,🍑 melocotón m,🍐 pera f,🍒 cereza f,🍍 piña f,🥭 mango m,🥝 kiwi m,🥥 coco m,🍈 melón m,🫐 arándano m",
+"🥕 Verduras":"🥕 zanahoria f,🥔 patata f,🍅 tomate m,🥦 brócoli m,🥒 pepino m,🌽 maíz m,🧅 cebolla f,🧄 ajo m,🍆 berenjena f,🫑 pimiento m,🥬 lechuga f,🍄 seta f,🥑 aguacate m,🫘 judía f,🥜 cacahuete m,🎃 calabaza f,🫛 guisante m",
+"🎨 Colores y formas":"🔴 rojo m,🟡 amarillo m,🟢 verde m,🔵 azul m,🟣 morado m,🟤 marrón m,⚫ negro m,⚪ blanco m,⭐ estrella f,❤️ corazón m,🔺 triángulo m,🟦 cuadrado m,🎨 paleta f,💎 diamante m,➕ cruz f",
+"🖐️ Cuerpo":"✋ mano f,👁️ ojo m,👃 nariz f,👂 oreja f,👄 boca f,🦶 pie m,🦷 diente m,👅 lengua f,🦴 hueso m,🧠 cerebro m,🦵 pierna f,💪 brazo m,😀 cara f,💇 pelo m",
+"👕 Ropa":"👕 camiseta f,👖 pantalón m,👟 zapato m,🧢 gorra f,🧣 bufanda f,🧤 guante m,👗 vestido m,🧦 calcetín m,👒 sombrero m,👜 bolso m,🧥 abrigo m,👔 corbata f,🩴 sandalia f,☂️ paraguas m",
+"🚗 Transporte":"🚗 coche m,🚌 autobús m,🚲 bicicleta f,✈️ avión m,🚂 tren m,🚢 barco m,🚁 helicóptero m,🚀 cohete m,🚑 ambulancia f,🛵 moto f,🚕 taxi m,🚜 tractor m,🛴 patinete m,⛵ velero m",
+"🌳 Naturaleza":"🌳 árbol m,🌸 flor f,☀️ sol m,🌙 luna f,☁️ nube f,🌧️ lluvia f,❄️ nieve f,🌈 arcoíris m,⛰️ montaña f,🌊 ola f,🔥 fuego m,🌵 cactus m,🍂 hoja f,🌴 palmera f,🏖️ playa f,🌋 volcán m,⚡ rayo m,🏝️ isla f,🌻 girasol m,🌹 rosa f,🌾 trigo m",
+"🎒 Escuela y juegos":"🎒 mochila f,📖 libro m,✏️ lápiz m,📓 cuaderno m,📏 regla f,🖊️ bolígrafo m,🗺️ mapa m,🎈 globo m,⚽ pelota f,🧸 peluche m,🎲 dado m,🪁 cometa f,🎸 guitarra f,🥁 tambor m,🎹 piano m,🎺 trompeta f,🎁 regalo m,🧩 puzle m,🪀 yoyó m,🔔 campana f,🪄 varita f",
+"🏫 Lugares":"🏫 escuela f,🏥 hospital m,⛪ iglesia f,🏰 castillo m,🏪 tienda f,🌉 puente m,🎡 noria f,⛽ gasolinera f,🏟️ estadio m,🏭 fábrica f"
+};
+const TODAS=Object.values(TEMAS).flatMap(s=>s.split(",").map(x=>x.split(" ")));
+const ELEGIDO={t:""};
+const OPC={def:["el","la"],indef:["un","una"]};
+const $=id=>document.getElementById(id);
+let modo="def",ronda=[],i=0,aciertos=0,bloqueado=false,ac=null;
+
+function barajar(a){return a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1])}
+function empezar(){const pool=ELEGIDO.t?TEMAS[ELEGIDO.t].split(",").map(x=>x.split(" ")):TODAS;ronda=barajar(pool).slice(0,10);i=0;aciertos=0;$("fin").hidden=true;$("juego").hidden=false;mostrar()}
+function mostrar(){
+ bloqueado=false;const [e,p]=ronda[i];
+ $("emoji").textContent=e;$("palabra").textContent=p;
+ $("hueco").textContent=OPC[modo][0];$("hueco").className="";
+ $("prog").textContent=(i+1)+" / "+ronda.length;$("puntos").textContent="⭐ "+aciertos;
+ $("msg").textContent="";$("msg").className="";
+ const caja=$("opciones");caja.innerHTML="";
+ OPC[modo].forEach((t,k)=>{const b=document.createElement("button");b.textContent=t;b.className="op o"+k;b.onclick=()=>responder(k,b);caja.appendChild(b)});
+}
+function responder(k,btn){
+ if(bloqueado)return;bloqueado=true;
+ const [,p,g]=ronda[i],c=g==="m"?0:1,ok=k===c,frase=OPC[modo][c]+" "+p;
+ const h=$("hueco");h.textContent=OPC[modo][c];h.className=c===0?"el":"la";
+ if(ok){aciertos++;btn.classList.add("ok");$("msg").textContent="¡Muy bien!";$("msg").className="ok"}
+ else{btn.classList.add("mal");document.querySelectorAll(".op")[c].classList.add("ok");$("msg").textContent="Se dice «"+frase+"»";$("msg").className="mal"}
+ $("puntos").textContent="⭐ "+aciertos;
+ sonido(ok);hablar(frase);
+ setTimeout(()=>{i++;i<ronda.length?mostrar():terminar()},ok?1300:2600);
+}
+function terminar(){
+ $("juego").hidden=true;$("fin").hidden=false;
+ $("estrellas").textContent=aciertos>=9?"⭐⭐⭐":aciertos>=6?"⭐⭐":"⭐";
+ $("resumen").textContent="Has acertado "+aciertos+" de "+ronda.length;
+ let rec=0;try{rec=+localStorage.getItem("rec_"+modo+ELEGIDO.t)||0;if(aciertos>rec){rec=aciertos;localStorage.setItem("rec_"+modo+ELEGIDO.t,rec)}}catch(e){}
+ $("record").textContent="Tu mejor marca: "+rec;
+}
+function sonido(ok){
+ try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+ const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);
+ o.frequency.value=ok?660:220;g.gain.setValueAtTime(.15,ac.currentTime);
+ g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.3);o.start();o.stop(ac.currentTime+.3)}catch(e){}
+}
+function hablar(t){
+ try{if(!window.speechSynthesis)return;speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(t);u.lang="es-ES";u.rate=.85;speechSynthesis.speak(u)}catch(e){}
+}
+function cambiarModo(m){modo=m;$("m-def").classList.toggle("act",m==="def");$("m-indef").classList.toggle("act",m==="indef");empezar()}
+$("m-def").onclick=()=>cambiarModo("def");
+$("m-indef").onclick=()=>cambiarModo("indef");
+$("otra").onclick=empezar;
+Object.keys(TEMAS).forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=k;$("tema").appendChild(o)});
+$("tema").onchange=e=>{ELEGIDO.t=e.target.value;empezar()};
+empezar();
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+</body>
+</html>

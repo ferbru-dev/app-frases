@@ -1,0 +1,16 @@
+{
+  "name": "¿El o la?",
+  "short_name": "¿El o la?",
+  "description": "Practica el género de las palabras eligiendo el artículo correcto.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e6f6ee",
+  "theme_color": "#23324a",
+  "lang": "es",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
